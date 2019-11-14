@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Enums\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Api.Business\Core.Api.Business.csproj" />
+    <ProjectReference Include="..\Core.Api.DataAccess.Contract\Core.Api.DataAccess.Contract.csproj" />
+  </ItemGroup>
+
+</Project>
