@@ -114,6 +114,48 @@ namespace Core.Api.DataAccess.Repositories.Core
             }
         }
 
+        public async Task<sp_logoutEntity> Logout(sp_logoutEntity entity)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_coreDbContext.Database.GetDbConnection().ConnectionString))
+                {
+                    DynamicParameters parameters = new DynamicParameters();
+                    parameters.Add("@Code", entity.Code);
+                    parameters.Add("@IPAddress", entity.IPAddress);
+                    parameters.Add("@Hostname ", entity.Hostname);
+                    parameters.Add("@ErrorMessage", dbType: DbType.String, direction: ParameterDirection.Output, size: 5215585);
+                    parameters.Add("@ErrorCode", dbType: DbType.Int32, direction: ParameterDirection.Output, size: 5215585);
+
+                    string query = "[dbo].[usp_logout]";
+
+                    await connection.OpenAsync();
+
+                    var result = await connection.ExecuteAsync(sql: query,
+                                                         param: parameters,
+                                                         commandType: CommandType.StoredProcedure);
+
+                    var ErrorMessage = parameters.Get<string>("@ErrorMessage");
+                    int ErrorCode = parameters.Get<int>("@ErrorCode");
+
+                    if (ErrorCode < 0 || !string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        throw new Exception(ErrorMessage);
+                    }
+
+                    return entity;
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                throw sqlEx;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public Task<UserEntity> Update(int id, UserEntity entity)
         {
             throw new NotImplementedException();

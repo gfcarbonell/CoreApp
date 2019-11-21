@@ -37,6 +37,13 @@ namespace Core.Api.Main.Config
                     In = "header",
                     Type = "apiKey"
                 });
+
+
+                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>>
+                {
+                    { "Bearer",new string[]{}}
+                });
+
                 c.DescribeAllEnumsAsStrings();
                 c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
             });

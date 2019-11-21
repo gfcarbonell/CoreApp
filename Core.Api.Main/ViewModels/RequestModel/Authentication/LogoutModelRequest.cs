@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 namespace Core.Api.Main.ViewModels.RequestModel.Authentication
 {
-    public class AuthenticationModelRequest
+    public class LogoutModelRequest
     {
-        public LoginModelRequest Login { get; set; }
-        public LogoutModelRequest Logout { get; set; }
+        public long Code { get; set; }
     }
 }

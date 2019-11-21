@@ -10,5 +10,6 @@ namespace Core.Api.DataAccess.Contract.IRepositories.Core
     public interface IUserRepository : IRepository<UserEntity>
     {
         Task<UserEntity> Login(sp_loginEntity element);
+        Task<sp_logoutEntity> Logout(sp_logoutEntity element);
     }
 }

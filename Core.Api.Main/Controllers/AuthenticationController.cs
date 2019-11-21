@@ -13,6 +13,7 @@ using Core.Api.Application.Contract.IServices;
 using Core.Api.Application.Contract.IServices.Core;
 using Core.Api.Business.Core;
 using Core.Api.Business.Core.StoreProcedures;
+using Core.Api.Business.StoreProcedures;
 using Core.Api.Main.ViewModels.RequestModel;
 using Core.Api.Main.ViewModels.RequestModel.Authentication;
 using Core.Api.Main.ViewModels.ResponseModel;
@@ -66,7 +67,6 @@ namespace Core.Api.Main.Controllers
         /// </summary>
         /// <remarks>
         /// <param name="request"></param>
-        /// 
         [AllowAnonymous]
         [ProducesResponseType(200)]
         [ProducesResponseType(500)]
@@ -78,6 +78,14 @@ namespace Core.Api.Main.Controllers
             response.UrlApi = HttpContext.Request.Path.Value;
             try
             {
+                if(Request.Login == null)
+                {
+                    response.ErrorCode = -1;
+                    response.ErrorMessage = "Request! inválido.";
+                    response.Success = false;
+                    return BadRequest(response);
+                }
+
                 var RemoteIpAddress = HttpContext.Connection.RemoteIpAddress;
                 string IPAddress = RemoteIpAddress.MapToIPv4().ToString().Trim();
                 string Hostname = Dns.GetHostEntry(RemoteIpAddress).HostName.Trim();
@@ -104,7 +112,7 @@ namespace Core.Api.Main.Controllers
                 var ExpiresDate = Now.AddMinutes(int.Parse(_configuration["JWT:Expires"]));
 
                 // Create Token
-                var Token = this.GetToken(new User()
+                string Token = this.GetToken(new User()
                 {
                     Username = Request.Login.Username
                 }, Now, ExpiresDate);
@@ -139,17 +147,10 @@ namespace Core.Api.Main.Controllers
 
                 IEnumerable<Business.Core.System> systems = await _systemService.GetByUser(User.ID);
 
-                //response.Login = new LoginModelResponse()
-                //{
-                //    Code = userSession.Code,
-                //    Token = userSession.Token,
-                //    ExpiresDate = userSession.ExpiresDate
-                //};
-
+                // Response
                 response.Login = _mapper.Map<LoginModelResponse>(userSession);
                 response.User = _mapper.Map<UserModelResponse>(User);
-                response.Systems = _mapper.Map<ICollection<SystemModelResponse>>(systems) ;
-
+                response.Systems = _mapper.Map<ICollection<SystemModelResponse>>(systems);
                 response.Success = true;
                 return Ok(response);
             }
@@ -162,6 +163,52 @@ namespace Core.Api.Main.Controllers
         }
 
 
+        /// <summary>
+        /// Login
+        /// </summary>
+        /// <remarks>
+        /// <param name="request"></param>
+        [ProducesResponseType(200)]
+        [ProducesResponseType(500)]
+        [ProducesResponseType(401)]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] AuthenticationModelRequest Request)
+        {
+            var response = new AuthenticationModelResponse();
+            response.UrlApi = HttpContext.Request.Path.Value;
+
+            try
+            {
+                if (Request.Logout == null)
+                {
+                    response.ErrorCode = -1;
+                    response.ErrorMessage = "Request! inválido.";
+                    response.Success = false;
+                    return BadRequest(response);
+                }
+
+                var RemoteIpAddress = HttpContext.Connection.RemoteIpAddress;
+                string IPAddress = RemoteIpAddress.MapToIPv4().ToString().Trim();
+                string Hostname = Dns.GetHostEntry(RemoteIpAddress).HostName.Trim();
+
+                var logout = await _userService.Logout(new sp_logout()
+                {
+                    Code = Request.Logout.Code,
+                    IPAddress = IPAddress,
+                    Hostname = Hostname
+                });
+
+                response.Logout = _mapper.Map<LogoutModelResponse>(logout);
+                response.Success = true;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.ErrorMessage = $"Error: {ex.Message}";
+                response.Success = false;
+                return StatusCode(500, response);
+            }
+        }
         private string GetToken(User user, DateTime notBefore, DateTime expires)
         {
             try

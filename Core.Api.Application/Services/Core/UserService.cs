@@ -2,6 +2,7 @@
 using Core.Api.Application.Contract.IServices;
 using Core.Api.Business.Core;
 using Core.Api.Business.Core.StoreProcedures;
+using Core.Api.Business.StoreProcedures;
 using Core.Api.DataAccess.Contract.Entities.Core;
 using Core.Api.DataAccess.Contract.Entities.StoreProcedures;
 using Core.Api.DataAccess.Contract.IRepositories.Core;
@@ -71,6 +72,13 @@ namespace Core.Api.Application.Services.Core
             var map = _mapper.Map<sp_loginEntity>(element);
             var entity = await _userRepository.Login(map);
             return _mapper.Map<User>(entity);
+        }
+
+        public async Task<sp_logout> Logout(sp_logout element)
+        {
+            var map = _mapper.Map<sp_logoutEntity>(element);
+            var entity = await _userRepository.Logout(map);
+            return _mapper.Map<sp_logout>(entity);
         }
 
         public Task<User> Update(int id, User element)
